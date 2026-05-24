@@ -9,6 +9,17 @@ Personal pipeline that collects AI news from YouTube, OpenAI, and Anthropic, sto
 3. **Digest** — Summaries in the `digests` table (OpenAI, or fallback excerpts)
 4. **Email** — Top stories ranked for your profile, delivered to your inbox
 
+## Architecture
+
+```mermaid
+flowchart LR
+  A[RSS / YouTube feeds] --> B[Scrape]
+  B --> C[(Supabase tables)]
+  C --> D[Transcripts / markdown]
+  D --> E[AI digests]
+  E --> F[Gmail email]
+```
+
 ## Screenshots
 
 | Supabase `digests` table | Gmail digest |
