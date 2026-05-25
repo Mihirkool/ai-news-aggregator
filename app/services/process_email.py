@@ -7,7 +7,7 @@ from datetime import datetime
 
 from app.agent.email_agent import EmailAgent, EmailIntroduction, RankedArticleDetail, EmailDigestResponse
 from app.agent.curator_agent import CuratorAgent
-from app.config import USE_FALLBACK_DIGESTS
+from app.config import USE_FALLBACK_DIGESTS, EMAIL_DIGEST_HOURS
 from app.profiles.user_profile import USER_PROFILE
 from app.database.repository import Repository
 from app.services.email import send_email, digest_to_html
@@ -136,7 +136,7 @@ def send_digest_email(hours: int = 24, top_n: int = 10) -> dict:
 
 
 if __name__ == "__main__":
-    result = send_digest_email(hours=24, top_n=10)
+    result = send_digest_email(hours=EMAIL_DIGEST_HOURS, top_n=10)
     if result["success"]:
         print("\n=== Email Digest Sent ===")
         print(f"Subject: {result['subject']}")

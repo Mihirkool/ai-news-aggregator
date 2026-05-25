@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from app.config import SCRAPE_HOURS
+from app.config import SCRAPE_HOURS, EMAIL_DIGEST_HOURS
 from app.runner import run_scrapers
 from app.services.process_anthropic import process_anthropic_markdown
 from app.services.process_youtube import process_youtube_transcripts
@@ -42,11 +42,15 @@ def run_daily_pipeline(hours: int | None = None, top_n: int = 10) -> dict:
         results["scraping"] = {
             "youtube": len(scraping_results.get("youtube", [])),
             "openai": len(scraping_results.get("openai", [])),
-            "anthropic": len(scraping_results.get("anthropic", []))
+            "anthropic": len(scraping_results.get("anthropic", [])),
+            "feeds": len(scraping_results.get("feeds", [])),
         }
-        logger.info(f"✓ Scraped {results['scraping']['youtube']} YouTube videos, "
-                    f"{results['scraping']['openai']} OpenAI articles, "
-                    f"{results['scraping']['anthropic']} Anthropic articles")
+        logger.info(
+            f"✓ Scraped {results['scraping']['youtube']} YouTube, "
+            f"{results['scraping']['openai']} OpenAI, "
+            f"{results['scraping']['anthropic']} Anthropic, "
+            f"{results['scraping']['feeds']} RSS items (last {hours}h)"
+        )
         
         logger.info("\n[2/5] Processing Anthropic markdown...")
         anthropic_result = process_anthropic_markdown()
@@ -67,7 +71,7 @@ def run_daily_pipeline(hours: int | None = None, top_n: int = 10) -> dict:
                     f"({digest_result['failed']} failed out of {digest_result['total']} total)")
         
         logger.info("\n[5/5] Generating and sending email digest...")
-        email_result = send_digest_email(hours=hours, top_n=top_n)
+        email_result = send_digest_email(hours=EMAIL_DIGEST_HOURS, top_n=top_n)
         results["email"] = email_result
         
         if email_result["success"]:

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from .models import YouTubeVideo, OpenAIArticle, AnthropicArticle, Digest
+from .models import YouTubeVideo, OpenAIArticle, AnthropicArticle, FeedArticle, Digest
 from .connection import get_session
 
 
@@ -115,6 +115,27 @@ class Repository:
             self.session.add_all(new_articles)
             self.session.commit()
         return len(new_articles)
+
+    def bulk_create_feed_articles(self, articles: List[dict]) -> int:
+        new_articles = []
+        for a in articles:
+            existing = self.session.query(FeedArticle).filter_by(guid=a["guid"]).first()
+            if not existing:
+                new_articles.append(
+                    FeedArticle(
+                        guid=a["guid"],
+                        source=a["source"],
+                        title=a["title"],
+                        url=a["url"],
+                        published_at=a["published_at"],
+                        description=a.get("description", ""),
+                        category=a.get("category"),
+                    )
+                )
+        if new_articles:
+            self.session.add_all(new_articles)
+            self.session.commit()
+        return len(new_articles)
     
     def get_anthropic_articles_without_markdown(self, limit: Optional[int] = None) -> List[AnthropicArticle]:
         query = self.session.query(AnthropicArticle).filter(AnthropicArticle.markdown.is_(None))
@@ -194,6 +215,19 @@ class Repository:
                     "url": article.url,
                     "content": article.markdown or article.description or "",
                     "published_at": article.published_at
+                })
+
+        feed_articles = self.session.query(FeedArticle).all()
+        for article in feed_articles:
+            key = f"feed:{article.guid}"
+            if key not in seen_ids:
+                articles.append({
+                    "type": "feed",
+                    "id": article.guid,
+                    "title": article.title,
+                    "url": article.url,
+                    "content": article.description or "",
+                    "published_at": article.published_at,
                 })
         
         if limit:

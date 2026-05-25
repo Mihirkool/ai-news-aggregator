@@ -57,7 +57,22 @@ ai-news-aggregator/
 | `youtube_videos` | Scraped videos + transcripts |
 | `openai_articles` | OpenAI blog RSS items |
 | `anthropic_articles` | Anthropic feeds + fetched markdown |
+| `feed_articles` | Google, Microsoft, Hugging Face, arXiv, Google News, etc. |
 | `digests` | Summaries used for the email |
+
+## Daily email — how it works
+
+If you registered the Windows task (`.\scripts\register_scheduled_task.ps1`):
+
+- **When:** every day at **8:00 AM** (change with `-Time "07:30"`).
+- **Requires:** PC on and logged in at that time.
+- **Each run:** scrape last **24 hours** → enrich → build digests → email **top 10** items from the last **24 hours**.
+
+You only get mail when **new** items exist in that window. Quiet days = short or empty digest.
+
+Manual run anytime: `.\scripts\run_daily.ps1`
+
+More sources (Twitter, Instagram, Wikipedia, Reddit): see [docs/SOURCES.md](docs/SOURCES.md).
 
 ## Prerequisites
 
@@ -89,7 +104,8 @@ uv run python -m app.database.create_tables
 | `POSTGRES_*` | Supabase database password & host |
 | `OPENAI_API_KEY` | For AI summaries and email ranking |
 | `MY_EMAIL` / `APP_PASSWORD` | Gmail sender |
-| `SCRAPE_HOURS` | How far back to fetch (default `168` = 7 days) |
+| `SCRAPE_HOURS` | How far back to scrape (default `24`) |
+| `EMAIL_DIGEST_HOURS` | Digests included in email (default `24`) |
 | `USE_FALLBACK_DIGESTS` | `true` = feed excerpts only (no OpenAI quota needed) |
 
 YouTube channels are listed in `app/config.py` (`YOUTUBE_CHANNELS`).

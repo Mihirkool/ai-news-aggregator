@@ -44,6 +44,19 @@ class AnthropicArticle(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class FeedArticle(Base):
+    __tablename__ = "feed_articles"
+
+    guid = Column(String, primary_key=True)
+    source = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    description = Column(Text)
+    published_at = Column(DateTime, nullable=False)
+    category = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class Digest(Base):
     __tablename__ = "digests"
     
